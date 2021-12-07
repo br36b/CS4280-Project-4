@@ -1,4 +1,4 @@
-TARGET_EXEC ?= frontEnd
+TARGET_EXEC ?= compfs
 
 CXX = g++ -std=c++11 -g3 -lstdc++
 
