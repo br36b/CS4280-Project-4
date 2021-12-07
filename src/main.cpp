@@ -1,8 +1,8 @@
 /*
  * Name: Bryan Rojas
  * CS4280
- * Date: 11/13/21
- * Purpose: Build off previous project to now parse through scanner tokens from file/keyboard input and identify tokens into output
+ * Date: 12/1/21
+ * Purpose: Build off previous project to handle static semantics from parse through scanner tokens from file/keyboard input and identify tokens into output
 */
 
 #include <iostream>
@@ -13,6 +13,7 @@
 
 #include "parser.h"
 #include "tree_traversal.h"
+#include "static_semantics.h"
 
 void create_file_from_input(std::string);
 void attempt_to_open_file(std::ofstream &, std::string);
@@ -95,9 +96,11 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  // Use preorder traversal once complete
-  std::cout << "\nOutputting Pre-Order Traversal" << std::endl;
-  print_pre_order(root);
+  /* // Use preorder traversal once complete */
+  /* std::cout << "\nOutputting Pre-Order Traversal" << std::endl; */
+  /* print_pre_order(root); */
+
+  process_semantics(root);
 
   // Close temp stream
   temp_stream.close();
