@@ -1,0 +1,18 @@
+&& p2g4 : fun with blocks &&
+&& Modified to test global scope within very nested block &&
+declare x = 5 ;
+program
+start
+   start
+   declare y = 7 ;
+   label dog ;
+   listen x ;
+   stop
+   start
+      start
+         declare cat = 0 ;
+         listen x;
+         jump dog ;
+      stop
+   stop
+stop

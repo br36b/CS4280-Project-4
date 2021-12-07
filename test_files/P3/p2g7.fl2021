@@ -1,0 +1,14 @@
+&&p2g7 : conditional, will obviously need to have variants checking each relational operator &&
+&& Modified to test past block variable usage &&
+declare y = 5 ;
+declare x = 1 ;
+program
+start
+   if [ x { == } 0 ] then
+   start
+      declare z = 2 ;
+      listen z ;
+   stop ;
+
+   listen z ;
+stop

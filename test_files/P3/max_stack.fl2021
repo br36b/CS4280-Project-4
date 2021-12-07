@@ -1,0 +1,120 @@
+&& p2g4 : fun with blocks &&
+&& Modified to test global scope within very nested block &&
+declare x = 5 ;
+
+declare foo1 = 1 ;
+declare foo2 = 1 ;
+declare foo3 = 1 ;
+declare foo4 = 1 ;
+declare foo5 = 1 ;
+declare foo6 = 1 ;
+declare foo7 = 1 ;
+declare foo8 = 1 ;
+declare foo9 = 1 ;
+declare foo10 = 1 ;
+declare foo11 = 1 ;
+declare foo12 = 1 ;
+declare foo13 = 1 ;
+declare foo14 = 1 ;
+declare foo15 = 1 ;
+declare foo16 = 1 ;
+declare foo17 = 1 ;
+declare foo18 = 1 ;
+declare foo19 = 1 ;
+declare foo20 = 1 ;
+declare foo21 = 1 ;
+declare foo22 = 1 ;
+declare foo23 = 1 ;
+declare foo24 = 1 ;
+declare foo25 = 1 ;
+declare foo26 = 1 ;
+declare foo27 = 1 ;
+declare foo28 = 1 ;
+declare foo29 = 1 ;
+declare foo30 = 1 ;
+declare foo31 = 1 ;
+declare foo32 = 1 ;
+declare foo33 = 1 ;
+declare foo34 = 1 ;
+declare foo35 = 1 ;
+declare foo36 = 1 ;
+declare foo37 = 1 ;
+declare foo38 = 1 ;
+declare foo39 = 1 ;
+declare foo40 = 1 ;
+declare foo41 = 1 ;
+declare foo42 = 1 ;
+declare foo43 = 1 ;
+declare foo44 = 1 ;
+declare foo45 = 1 ;
+declare foo46 = 1 ;
+declare foo47 = 1 ;
+declare foo48 = 1 ;
+declare foo49 = 1 ;
+declare foo50 = 1 ;
+declare foo51 = 1 ;
+declare foo52 = 1 ;
+declare foo53 = 1 ;
+declare foo54 = 1 ;
+declare foo55 = 1 ;
+declare foo56 = 1 ;
+declare foo57 = 1 ;
+declare foo58 = 1 ;
+declare foo59 = 1 ;
+declare foo60 = 1 ;
+declare foo61 = 1 ;
+declare foo62 = 1 ;
+declare foo63 = 1 ;
+declare foo64 = 1 ;
+declare foo65 = 1 ;
+declare foo66 = 1 ;
+declare foo67 = 1 ;
+declare foo68 = 1 ;
+declare foo69 = 1 ;
+declare foo70 = 1 ;
+declare foo71 = 1 ;
+declare foo72 = 1 ;
+declare foo73 = 1 ;
+declare foo74 = 1 ;
+declare foo75 = 1 ;
+declare foo76 = 1 ;
+declare foo77 = 1 ;
+declare foo78 = 1 ;
+declare foo79 = 1 ;
+declare foo80 = 1 ;
+declare foo81 = 1 ;
+declare foo82 = 1 ;
+declare foo83 = 1 ;
+declare foo84 = 1 ;
+declare foo85 = 1 ;
+declare foo86 = 1 ;
+declare foo87 = 1 ;
+declare foo88 = 1 ;
+declare foo89 = 1 ;
+declare foo90 = 1 ;
+declare foo91 = 1 ;
+declare foo92 = 1 ;
+declare foo93 = 1 ;
+declare foo94 = 1 ;
+declare foo95 = 1 ;
+declare foo96 = 1 ;
+declare foo97 = 1 ;
+declare foo98 = 1 ;
+declare foo99 = 1 ;
+declare foo100 = 1 ;
+declare foo101 = 1 ;
+program
+start
+   start
+   declare y = 7 ;
+   label dog ;
+   listen x ;
+   stop
+   start
+      start
+         declare cat = 0 ;
+         listen x;
+         jump dog ;
+      stop
+   stop
+stop
