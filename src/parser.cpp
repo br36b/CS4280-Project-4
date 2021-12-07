@@ -389,7 +389,7 @@ Node *M(int depth) {
   return temp;
 }
 
-// ( <expr> ) | Identifier | Integer
+// <R> -> ( <expr> ) | Identifier | Integer
 Node *R(int depth) {
   // Increment depth for function chain calls
   depth++;
