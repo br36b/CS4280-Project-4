@@ -26,7 +26,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 .PHONY: clean
 
 clean:
-	$(RM) -r $(BUILD_DIR) $(TARGET_EXEC) temp_dat123.fl2021 kb.fl2021
+	$(RM) -r $(BUILD_DIR) $(TARGET_EXEC) kb.fl2021
 
 -include $(DEPS)
 

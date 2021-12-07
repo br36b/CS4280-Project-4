@@ -1,8 +1,9 @@
 /*
  * Name: Bryan Rojas
  * CS4280
- * Date: 12/1/21
- * Purpose: Build off previous project to handle static semantics from parse through scanner tokens from file/keyboard input and identify tokens into output
+ * Date: 12/10/21
+ * Purpose: Build off previous project to generate assembly target file
+ *  from static semantics parsing and scanner tokens from file/keyboard input
 */
 
 #include <iostream>
@@ -19,14 +20,18 @@ void create_file_from_input(std::string);
 void attempt_to_open_file(std::ofstream &, std::string);
 void load_input_fp(std::ifstream &, std::string);
 
-void cleanup();
+void cleanup(std::string);
 
-const std::string TEMP_DATA_PREFIX = "temp_dat123";
+// String constants for file names/ending
 const std::string INPUT_FILE_SUFFIX = ".fl2021";
+const std::string OUTPUT_FILE_SUFFIX = ".asm";
+const std::string KB_DATA_PREFIX = "kb";
 
+// String dynamically changed for filename
+// Global for future cleanup()
+std::string base_filename;
 int main(int argc, char *argv[]) {
-  // String constants for file names/ending
-  std::string base_filename;
+  // Strings for input and output base filenames
 
   // Before doing anything make sure no excess params
   if (argc > 2) {
@@ -38,7 +43,7 @@ int main(int argc, char *argv[]) {
     std::cout << "No file provided. Taking input (CTRL-D to end): " << std::endl;
 
     // Set default file and create it with data inputted
-    base_filename = TEMP_DATA_PREFIX;
+    base_filename = KB_DATA_PREFIX;
     create_file_from_input(base_filename + INPUT_FILE_SUFFIX);
   }
   // Input file provided
@@ -80,18 +85,18 @@ int main(int argc, char *argv[]) {
 
   // Construct the entire filename into designated format
   // *.fl2021
-  const std::string FINAL_FILENAME = base_filename + INPUT_FILE_SUFFIX;
+  const std::string FINAL_INPUT_FILENAME = base_filename + INPUT_FILE_SUFFIX;
 
   // Hold a file for inputting into respective ending locations
   std::ifstream temp_stream;
-  load_input_fp(temp_stream, FINAL_FILENAME);
+  load_input_fp(temp_stream, FINAL_INPUT_FILENAME);
 
   // Begin parser
   Node *root = parser(temp_stream);
 
   if (root == nullptr) {
     std::cout << "Parser failed to load data." << std::endl;
-    cleanup();
+    cleanup(base_filename);
 
     exit(EXIT_FAILURE);
   }
@@ -102,10 +107,16 @@ int main(int argc, char *argv[]) {
 
   process_semantics(root);
 
+  const std::string FINAL_OUTPUT_FILENAME = base_filename + OUTPUT_FILE_SUFFIX;
+  std::cout << "Target Output: "
+    << FINAL_INPUT_FILENAME << " "
+    << base_filename << " "
+    << FINAL_OUTPUT_FILENAME << std::endl;
+
   // Close temp stream
   temp_stream.close();
 
-  cleanup();
+  cleanup(base_filename);
 
   // Just for exit formatting
   std::cout << std::endl;
@@ -169,7 +180,9 @@ void load_input_fp(std::ifstream &temp, std::string filename) {
 
 // Remove temp file
 void cleanup() {
-  // Delete the temp file if it exists
-  std::string default_file_name = TEMP_DATA_PREFIX + INPUT_FILE_SUFFIX;
-  std::remove(default_file_name.c_str());
+  // Delete the temp file for input if it was created from keyboard
+  if (base_filename == KB_DATA_PREFIX) {
+    std::string default_file_name = base_filename + INPUT_FILE_SUFFIX;
+    std::remove(default_file_name.c_str());
+  }
 }
