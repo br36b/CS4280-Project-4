@@ -1,8 +1,12 @@
+Storage=Local
+
+The local option was implemented.
+
 Empty file is not valid and will be allowed to be progress past program initialization.
 
 Program can be compiled using provided Makefile.
 
-Usage: `./frontEnd [file]` or `./frontEnd < [file]`
+Usage: `./compfs [file]` or `./compfs < [file]`
 
 Program will find the longest match of symbols that work. Upon a state change it will consider that a wrapped up token. This means that if a number collides with a letter, it will just split it into a int and begin working on an identifier/other token.
 
