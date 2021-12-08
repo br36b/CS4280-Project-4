@@ -105,25 +105,19 @@ int main(int argc, char *argv[]) {
   /* std::cout << "\nOutputting Pre-Order Traversal" << std::endl; */
   /* print_pre_order(root); */
 
-  process_semantics(root);
-
   const std::string FINAL_OUTPUT_FILENAME = base_filename + OUTPUT_FILE_SUFFIX;
-
-  // Hold file pointer for
-  std::ofstream temp_out_fp;
 
   // Create and verify file can be used
   create_file_from_input(FINAL_OUTPUT_FILENAME);
-  attempt_to_open_file(temp_out_fp, FINAL_OUTPUT_FILENAME);
 
-  std::cout << "Target Output: "
-    << FINAL_INPUT_FILENAME << " "
-    << base_filename << " "
-    << FINAL_OUTPUT_FILENAME << std::endl;
+  // Begin Code Generation
+  initialize_semantics(root, FINAL_OUTPUT_FILENAME);
+
+  // Output name of target generated and nothing else on success
+  std::cout << "Target File Generated: " << FINAL_OUTPUT_FILENAME << std::endl;
 
   // Close temp streams
   temp_in_fp.close();
-  temp_out_fp.close();
 
   cleanup();
 
@@ -161,7 +155,9 @@ void attempt_to_open_file(std::ofstream &temp, std::string filename) {
 
   // Exit if no file could be created for output
   if (temp.fail()) {
-    std::cout << "Failed to create a file for data output. Exiting.\n" << std::endl;
+    std::cout << "Failed to create a file for data output."
+      << "File: " << filename
+      << " Exiting.\n" << std::endl;
 
     exit(EXIT_FAILURE);
   }
@@ -173,14 +169,16 @@ void load_input_fp(std::ifstream &temp, std::string filename) {
 
   // Check to see if file can be read from
   if (temp.fail()) {
-    std::cout << "Failed to load file for data input. Exiting.\n" << std::endl;
+    std::cout << "Failed to load file for data input."
+      << "File: " << filename
+      << " Exiting.\n" << std::endl;
 
     exit(EXIT_FAILURE);
   }
 
   // Check to see if the file contains data
   if (temp.peek() == std::ifstream::traits_type::eof()) {
-    std::cout << "No data was found in the file.\n" << std::endl;
+    std::cout << "No data was found in the file/input provided.\n" << std::endl;
 
     temp.close();
     exit(EXIT_FAILURE);

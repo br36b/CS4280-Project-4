@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "runtime_semantics.h"
 
@@ -16,6 +17,12 @@ static unsigned int base_scope;
 
 // Store the local scope when blocks are used
 static unsigned int block_indent_scope;
+
+// Store total amount of temp vars found
+static unsigned int total_temp_vars;
+
+// Store global file for output
+std::ofstream out_fp;
 
 // Helper function to recursively call children
 void iterate_children(std::vector<Node *> children, unsigned int var_count) {
@@ -45,6 +52,19 @@ int check_vars(std::string instance) {
   return -1;
 }
 
+// Assist in formatting assembly file
+void write_asm(std::string statement, std::string misc_param="") {
+  out_fp << statement;
+
+  // If not empty add extra spacing
+  if (misc_param != "") {
+    out_fp << " " << misc_param;
+  }
+
+  // Terminate each line with newline
+  out_fp << "\n";
+}
+
 // Helper functions to work with stack items
 void push(Token tk) {
   // Make sure that there is still room in the stack
@@ -69,6 +89,9 @@ void push(Token tk) {
   // Push the variable to the global index in stack
   tk_stack[total_vars] = tk;
 
+  // Output push instances to file
+  write_asm("PUSH");
+
   // Increment count to resemble total variables in stack
   total_vars++;
 }
@@ -79,6 +102,9 @@ void pop() {
   for (unsigned int current_scope = total_vars; current_scope > base_scope; current_scope--) {
     // One less variable is in the stack
     total_vars--;
+
+    // Output pop instances to file
+    write_asm("POP");
 
     // Reset the value within
     tk_stack[current_scope].token_instance = "";
@@ -112,7 +138,18 @@ void print_vars() {
   }
 }
 
+// Initialize base variables for assembly output
+void initialize_semantics(Node * root, std::string filename) {
+  // Set the file pointer up
+  // File has been verified externally prior to call
+  out_fp.open(filename);
+
+  // Begin recursive chain
+  process_semantics(root);
+}
+
 // Handle main recursive check
+// var_count is defaulted to 0 in header
 void process_semantics(Node * root, int var_count) {
   // Make sure there is something inside of the root node
   // All possible children get checked when recursively calling
@@ -131,10 +168,12 @@ void process_semantics(Node * root, int var_count) {
     // Evaluate slot for <vars> and <block>
 
     iterate_children(root->children, local_var_count);
+
+    // At the end of the traversal, print STOP to target
+    write_asm("STOP");
   }
   // <vars> -> empty | declare Identifier = Integer ; <vars>
   else if (label == "<vars>") {
-
     // Identifier
     int position = find(root->consumed_tokens[1]);
 
@@ -142,7 +181,13 @@ void process_semantics(Node * root, int var_count) {
 
     // If not found then it is valid
     if (position == -1 || position > var_count) {
+      std::string integer_value = root->consumed_tokens[3].token_instance;
+
       push(root->consumed_tokens[1]);
+
+      // Fetch and add variable to stack base
+      write_asm("LOAD", integer_value);
+      write_asm("STACKW 0", integer_value);
 
       var_count++;
     }
