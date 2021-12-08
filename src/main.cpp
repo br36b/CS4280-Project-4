@@ -14,13 +14,13 @@
 
 #include "parser.h"
 #include "tree_traversal.h"
-#include "static_semantics.h"
+#include "runtime_semantics.h"
 
 void create_file_from_input(std::string);
 void attempt_to_open_file(std::ofstream &, std::string);
 void load_input_fp(std::ifstream &, std::string);
 
-void cleanup(std::string);
+void cleanup();
 
 // String constants for file names/ending
 const std::string INPUT_FILE_SUFFIX = ".fl2021";
@@ -88,15 +88,15 @@ int main(int argc, char *argv[]) {
   const std::string FINAL_INPUT_FILENAME = base_filename + INPUT_FILE_SUFFIX;
 
   // Hold a file for inputting into respective ending locations
-  std::ifstream temp_stream;
-  load_input_fp(temp_stream, FINAL_INPUT_FILENAME);
+  std::ifstream temp_in_fp;
+  load_input_fp(temp_in_fp, FINAL_INPUT_FILENAME);
 
   // Begin parser
-  Node *root = parser(temp_stream);
+  Node *root = parser(temp_in_fp);
 
   if (root == nullptr) {
     std::cout << "Parser failed to load data." << std::endl;
-    cleanup(base_filename);
+    cleanup();
 
     exit(EXIT_FAILURE);
   }
@@ -108,15 +108,24 @@ int main(int argc, char *argv[]) {
   process_semantics(root);
 
   const std::string FINAL_OUTPUT_FILENAME = base_filename + OUTPUT_FILE_SUFFIX;
+
+  // Hold file pointer for
+  std::ofstream temp_out_fp;
+
+  // Create and verify file can be used
+  create_file_from_input(FINAL_OUTPUT_FILENAME);
+  attempt_to_open_file(temp_out_fp, FINAL_OUTPUT_FILENAME);
+
   std::cout << "Target Output: "
     << FINAL_INPUT_FILENAME << " "
     << base_filename << " "
     << FINAL_OUTPUT_FILENAME << std::endl;
 
-  // Close temp stream
-  temp_stream.close();
+  // Close temp streams
+  temp_in_fp.close();
+  temp_out_fp.close();
 
-  cleanup(base_filename);
+  cleanup();
 
   // Just for exit formatting
   std::cout << std::endl;

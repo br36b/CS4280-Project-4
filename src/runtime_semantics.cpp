@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "static_semantics.h"
+#include "runtime_semantics.h"
 
 // Assume no more than 100 items in a program
 const int MAX_SIZE = 100;
