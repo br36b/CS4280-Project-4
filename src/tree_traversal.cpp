@@ -41,7 +41,7 @@ std::map<Token_Type, std::string> tk_strings = {
   // Note: Do not use assign for = since it's a keyword
   { TK_EQUALS         , "Operator: Equals" },        // =
   { TK_GREATER_THAN   , "Operator: Greater Than" },  // >
-  { TK_LESS_THAM      , "Operator: Less Than" },     // <
+  { TK_LESS_THAN      , "Operator: Less Than" },     // <
   { TK_EQUALS_EQUALS  , "Operator: Equals Equals" }, // == give literal name for now
   { TK_COLON          , "Operator: Colon" },         // :
   { TK_COLON_EQUALS   , "Operator: Colon-Equals" },  // :=  Assignment op?

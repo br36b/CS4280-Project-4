@@ -38,7 +38,7 @@ enum Token_Type {
   // Note: Do not use assign for = since it's a keyword
   TK_EQUALS,        // =
   TK_GREATER_THAN,  // >
-  TK_LESS_THAM,     // <
+  TK_LESS_THAN,     // <
   TK_EQUALS_EQUALS, // == give literal name for now
   TK_COLON,         // :
   TK_COLON_EQUALS,  // :=  Assignment op?

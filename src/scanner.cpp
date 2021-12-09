@@ -145,7 +145,7 @@ std::map<int, Token_Type> final_token_states = {
   // Note: Do not use assign for = since it's a keyword
   { 1002, TK_EQUALS },            // =
   { 1003, TK_GREATER_THAN },      // >
-  { 1004, TK_LESS_THAM },         // <
+  { 1004, TK_LESS_THAN },         // <
   { 1005, TK_EQUALS_EQUALS },     // ==
   { 1006, TK_COLON },             // :
   { 1007, TK_COLON_EQUALS },      // :=
