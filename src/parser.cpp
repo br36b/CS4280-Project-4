@@ -379,12 +379,11 @@ Node *M(int depth) {
 
     // <M>
     add_child(temp, M(depth));
-
-    return temp;
   }
-
   // Otherwise it was an <R>
-  add_child(temp, R(depth));
+  else {
+    add_child(temp, R(depth));
+  }
 
   return temp;
 }
