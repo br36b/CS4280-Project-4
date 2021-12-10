@@ -16,7 +16,7 @@
 #include "tree_traversal.h"
 #include "runtime_semantics.h"
 
-void create_file_from_input(std::string);
+void create_file_from_input(std::string, bool);
 void attempt_to_open_file(std::ofstream &, std::string);
 void load_input_fp(std::ifstream &, std::string);
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     // Set default file and create it with data inputted
     base_filename = KB_DATA_PREFIX;
-    create_file_from_input(base_filename + INPUT_FILE_SUFFIX);
+    create_file_from_input(base_filename + INPUT_FILE_SUFFIX, true);
   }
   // Input file provided
   else if (argc == 2) {
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   const std::string FINAL_OUTPUT_FILENAME = base_filename + OUTPUT_FILE_SUFFIX;
 
   // Create and verify file can be used
-  create_file_from_input(FINAL_OUTPUT_FILENAME);
+  create_file_from_input(FINAL_OUTPUT_FILENAME, false);
 
   // Begin Code Generation
   initialize_semantics(root, FINAL_OUTPUT_FILENAME);
@@ -129,14 +129,14 @@ int main(int argc, char *argv[]) {
 
 
 // Will generate a temp_file in the directory.
-void create_file_from_input(std::string filename) {
+void create_file_from_input(std::string filename, bool is_prompt) {
   // Take and store some input temporarily
   std::ofstream out_stream;
   attempt_to_open_file(out_stream, filename);
 
   std::string input;
 
-  while (getline(std::cin, input)) {
+  while (is_prompt && getline(std::cin, input)) {
     // Write to file, separate with newline for breaking
       // Swapped from just `cin >> input` to `getline`
       // This was so redirections could be handled properly
