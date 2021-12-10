@@ -1,4 +1,4 @@
-&&p4t5 : what does this do?
+&&p4t5 : what does this do? &&
 declare x = 0 ;
 declare y = 2 ;
 declare z = 0 ;
