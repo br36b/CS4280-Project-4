@@ -1,0 +1,21 @@
+&& p4t5 : what does this do? &&
+&& loops up to a number and prints out even divisors &&
+declare x = 0 ;
+declare y = 2 ;
+declare z = 0 ;
+program
+start
+   listen x ;
+   while [ y < x ]
+   start
+      assign z = x / y ;
+      assign z = x - ( z * y ) ;
+      if [ z == 0 ]
+      start
+         talk y ;
+      stop ;
+      else
+        talk -1;
+      assign y = y + 1 ;
+   stop ;
+stop
