@@ -28,6 +28,8 @@ static unsigned int total_temp_labels;
 // Store stack of temp variables used
 std::string temp_stack[MAX_SIZE];
 
+const std::string LABEL_PREFIX = "L_";
+
 enum temp_type {
   LABEL,
   VARIABLE
@@ -40,7 +42,7 @@ std::string generate_temp(int type) {
   std::string base;
 
   if (type == LABEL) {
-    base += "L" + std::to_string(total_temp_labels);
+    base += LABEL_PREFIX + std::to_string(total_temp_labels);
 
     total_temp_labels++;
   }
@@ -95,14 +97,59 @@ void write_asm(std::string statement, std::string misc_param="") {
   out_fp << "\n";
 }
 
-// Assist in writing all global variables to assembly file
+// Assist in writing all global variables/temporaries to assembly file
 void write_global_vars() {
+  out_fp << "\n";
+
   for (unsigned int i = 0; i < MAX_SIZE; i++) {
     if (temp_stack[i] == "") { continue; }
     else {
       // "Initialize" variables to 0
       write_asm(temp_stack[i], "0");
     }
+  }
+}
+
+// Assist in handling relational operators
+void write_RO(Token_Type tk, std::string t_var, std::string t_label) {
+  // <> Must use BRZ since 3 > 3 is not greater
+
+  // > is greater than
+  // 4 - 3 = 1
+  // True as long as result > 0
+  if (tk == TK_GREATER_THAN) {
+    write_asm("SUB", t_var);
+    write_asm("BRZNEG", t_label);
+  }
+  // < is less than
+  // 3 - 4 = 1
+  // True as long as result < 0
+  else if (tk == TK_LESS_THAN) {
+    write_asm("SUB", t_var);
+    write_asm("BRZPOS", t_label);
+  }
+  // { == } is NOT equal
+  // 4 - 4 != 0
+  // True as long as result is not 0
+  else if (tk == TK_L_BRACE) {
+    write_asm("SUB", t_var);
+    write_asm("BRZERO", t_label);
+  }
+  // == is equal
+  // 4 - 4 = 0
+  // True as long as result is 0
+  // Should only exit on variation where not 0
+  else if (tk == TK_EQUALS_EQUALS) {
+    write_asm("SUB", t_var);
+    write_asm("BRPOS", t_label);
+    write_asm("BRNEG", t_label);
+  }
+  // Note: Just multiply them and look for sign changes
+  // if same signs, a * b >= 0; -1 * -1 = 0;
+  // % returns true if the signs of the arguments are the same (with a 0 counting as both, so a -1 and a 0 would evaluate as true, so would a 1 and a 0)
+  else if (tk == TK_EQUALS_EQUALS) {
+    write_asm("MULT", t_var);
+    write_asm("BRPOS", t_label);
   }
 }
 
@@ -141,6 +188,7 @@ void push(Token tk) {
 void pop() {
   // Loop to remove current scope tokens
   for (unsigned int current_scope = total_vars; current_scope > base_scope; current_scope--) {
+
     // One less variable is in the stack
     total_vars--;
 
@@ -244,10 +292,8 @@ void process_semantics(Node * root, int var_count) {
       exit(EXIT_FAILURE);
     }
 
-    // If no other tokens then <vars>
-    if (!root->children.empty()) {
-      process_semantics(root->children[0], var_count);
-    }
+    // iterate over remaining children, if any
+    iterate_children(root->children, var_count);
 
     if (block_indent_scope > 0) {
       print_vars();
@@ -396,30 +442,6 @@ void process_semantics(Node * root, int var_count) {
       }
     }
   }
-  // <stat> -> <in> ; | <out> ; | <block> | <if> ; | <loop> ; | <assign> ; | <goto> ; | <label> ;
-  // TODO: Probably remove since no direct writing here
-  else if (label == "<stat>") {
-    std::string current_label = root->children[0]->func_label;
-
-    // Iterate over the children of stat blocks
-    std::vector<std::string> valid_blocks = {
-      "<in>",
-      "<out>",
-      "<block>",
-      "<if>",
-      "<loop>",
-      "<assign>",
-      "<goto>",
-      "<label>",
-    };
-
-    for (auto item: valid_blocks) {
-      if (item == current_label) {
-        process_semantics(root->children[0], var_count);
-        break;
-      }
-    }
-  }
   // <in> -> listen Identifier
   else if (label == "<in>") {
     Token temp_tk = root->consumed_tokens[1];
@@ -459,13 +481,33 @@ void process_semantics(Node * root, int var_count) {
   // <if> -> if [ <expr> <RO> <expr> ] then <stat>
   //          | if [ <expr> <RO> <expr> ] then <stat> else <stat>
   else if (label == "<if>") {
-    iterate_children(root->children, var_count);
+    // [   0       1     2       3           4         ]
+    // [ <expr>, <RO>, <expr>, <stat>, optional <stat> ]
+    Token temp_tk = root->children[1]->consumed_tokens[0];
+    Token_Type temp_tk_id = temp_tk.token_ID;
+
+    std::string temp_var = generate_temp(VARIABLE);
+    std::string temp_label = generate_temp(LABEL);
+
+    // Get value of second <expr>
+    process_semantics(root->children[2], var_count);
+    write_asm("STORE", temp_var);
+
+    // Get value of first <expr>
+    process_semantics(root->children[0], var_count);
+
+    // Evaluate <RO>
+    write_RO(temp_tk_id, temp_var, temp_label);
 
     // TODO: Figure out how to deal with optionals
+    // Based on condition evaluate then <stat> or else <stat>
+    process_semantics(root->children[3], var_count);
+
+    write_asm(temp_label + ":", "NOOP");
   }
   // <loop> -> while [ <expr> <RO> <expr> ] <stat>
   else if (label == "<loop>") {
-    // [<expr>, <RO>, <expr>]
+    // [<expr>, <RO>, <expr>, <stat>]
     Token temp_tk = root->children[1]->consumed_tokens[0];
     Token_Type temp_tk_id = temp_tk.token_ID;
 
@@ -473,34 +515,28 @@ void process_semantics(Node * root, int var_count) {
     std::string temp_var = generate_temp(VARIABLE);
 
     // Get temp labels
-    std::string temp_begin = generate_temp(LABEL);
-    std::string temp_end = generate_temp(LABEL);
+    std::string temp_start_label = generate_temp(LABEL);
+    std::string temp_end_label = generate_temp(LABEL);
 
-    // Declare start of loop
-    write_asm(temp_begin, "NOOP");
+    // Declare start of loop label
+    write_asm(temp_start_label + ":", "NOOP");
 
-    // Evaluate <expr> and store value
+    // Evaluate second <expr> and store value
     process_semantics(root->children[2], var_count);
     write_asm("STORE", temp_var);
 
     // Evaluate other <expr>
     process_semantics(root->children[0], var_count);
 
-    /*
-    > is greater than
-    < is less than
-    { == }  is NOT equal
-    == is equal
-    % returns true if the signs of the arguments are the same (with a 0 counting as both, so a -1 and a 0 would evaluate as true, so would a 1 and a 0)
+    // Evaluate <RO>
+    write_RO(temp_tk_id, temp_var, temp_end_label);
 
-    */
+    // Iterate <stat>
+    process_semantics(root->children[3], var_count);
 
-    // TODO: DEBUG CONDITIONALS BECAUSE LOGIC WEIRD
-    // Evaluate based on relational operator
-    if (temp_tk_id == TK_GREATER_THAN) {
-      write_asm("SUB", temp_var);
-      /* write_asm("BR") */
-    }
+    // Declare end of loop
+    write_asm("BR", temp_start_label);
+    write_asm(temp_end_label + ":", "NOOP");
   }
   // <assign> -> assign Identifier = <expr>
   else if (label == "<assign>") {
@@ -529,31 +565,31 @@ void process_semantics(Node * root, int var_count) {
   // <label> -> label Identifier
   else if (label == "<label>") {
     Token temp_tk = root->consumed_tokens[1];
-    std::string label = root->consumed_tokens[1].token_instance;
+    std::string t_label = root->consumed_tokens[1].token_instance;
 
     // Identifier
     int position = find(temp_tk);
 
     // If not found then it is valid
     if (position == -1 || position > var_count) {
-      push(root->consumed_tokens[1]);
+      temp_tk.token_instance = LABEL_PREFIX + t_label;
+      push(temp_tk);
 
       // No children left over at this point
       // Initialize labels to NOOP
-      write_asm(label + ":", "NOOP");
+      write_asm(LABEL_PREFIX + t_label + ":", "NOOP");
 
       var_count++;
     }
     // If found within the stack of currently stored
     else if (position < var_count) {
       std::cout << "Semantic Error: Identifier declared more than once."
-        << "\n\t Instance: " << root->consumed_tokens[1].token_instance
-        << "\n\t Line: " << root->consumed_tokens[1].line_num
+        << "\n\t Instance: " << t_label
+        << "\n\t Line: " << temp_tk.line_num
         << std::endl;
 
       exit(EXIT_FAILURE);
     }
-
   }
   // <goto> -> jump Identifier
   else if (label == "<goto>") {
@@ -561,11 +597,11 @@ void process_semantics(Node * root, int var_count) {
     Token temp_tk = root->consumed_tokens[1];
 
     // Identifier
-    int position = check_vars(temp_tk.token_instance);
+    int position = check_vars(LABEL_PREFIX + temp_tk.token_instance);
 
     // If no instance cannot be found
     if (position == -1) {
-      std::cout << "Semantic Error: Usage of undeclared variable."
+      std::cout << "Semantic Error: Usage of undeclared label identifier."
         << "\n\t Instance: " << temp_tk.token_instance
         << "\n\t Line: " << temp_tk.line_num
         << std::endl;
@@ -574,7 +610,7 @@ void process_semantics(Node * root, int var_count) {
     }
     // Otherwise allow the jump to occur
     else {
-      write_asm("BR", temp_tk.token_instance);
+      write_asm("BR", LABEL_PREFIX + temp_tk.token_instance);
     }
   }
   // Most things should be able to just keep recursively iterating their children

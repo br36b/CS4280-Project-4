@@ -19,6 +19,8 @@ void print_vars();
 int check_vars(std::string);
 
 void write_asm(std::string, std::string);
+void write_global_vars();
+void write_RO(Token, std::string, std::string);
 void initialize_semantics(Node *, std::string="");
 
 std::string generate_temp(int);
