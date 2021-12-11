@@ -253,7 +253,7 @@ void process_semantics(Node * root, int var_count) {
 
   std::cout << "Next Process Point: " << label << std::endl;
 
-  print_vars();
+  /* print_vars(); */
 
   // <program> -> <vars> program <block>
   if (label == "<program>") {
@@ -273,7 +273,6 @@ void process_semantics(Node * root, int var_count) {
     // Identifier
     int position = find(root->consumed_tokens[1]);
 
-    base_scope = total_vars;
 
     // If not found then it is valid
     // n>=0 (the variable was found on the stack), then issue to the target
@@ -300,10 +299,6 @@ void process_semantics(Node * root, int var_count) {
 
     // iterate over remaining children, if any
     iterate_children(root->children, var_count);
-
-    if (block_indent_scope > 0) {
-      print_vars();
-    }
   }
   // <block> -> start <vars> <stats> stop
   else if (label == "<block>") {
@@ -311,10 +306,6 @@ void process_semantics(Node * root, int var_count) {
 
     // Change scope for current block
     base_scope = total_vars;
-
-    if (block_indent_scope == 0) {
-      print_vars();
-    }
 
     // Begin block scope
     block_indent_scope++;
