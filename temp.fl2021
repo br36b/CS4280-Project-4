@@ -1,0 +1,12 @@
+declare z = 1;
+declare y = 2;
+program
+start
+	start
+		declare x = 3;
+		declare y = 4;
+		listen x;
+	stop
+	listen z;
+	listen x;
+stop
