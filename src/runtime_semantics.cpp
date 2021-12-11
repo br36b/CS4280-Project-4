@@ -112,8 +112,10 @@ void write_global_vars() {
 
 // Assist in handling relational operators
 void write_RO(Token_Type tk, std::string t_var, std::string t_label) {
-  // <> Must use BRZ since 3 > 3 is not greater
+  // Each asm output should be the exit condition
+  // Otherwise the code within each <stat> is executed
 
+  // <> Must use BRZ since 3 > 3 is not greater
   // > is greater than
   // 4 - 3 = 1
   // True as long as result > 0
@@ -144,12 +146,13 @@ void write_RO(Token_Type tk, std::string t_var, std::string t_label) {
     write_asm("BRPOS", t_label);
     write_asm("BRNEG", t_label);
   }
-  // Note: Just multiply them and look for sign changes
-  // if same signs, a * b >= 0; -1 * -1 = 0;
   // % returns true if the signs of the arguments are the same (with a 0 counting as both, so a -1 and a 0 would evaluate as true, so would a 1 and a 0)
-  else if (tk == TK_EQUALS_EQUALS) {
+    // Note: Just multiply them and look for sign changes
+    // if same signs, a * b >= 0; -1 * -1 >= 0;
+    // negating exit condition would be BRNEG since anything >= 0 is true
+  else if (tk == TK_PERCENT) {
     write_asm("MULT", t_var);
-    write_asm("BRPOS", t_label);
+    write_asm("BRNEG", t_label);
   }
 }
 
@@ -204,10 +207,12 @@ void pop() {
 // Find the index of a token
 int find(Token tk) {
   // Loop to find token
-  for (unsigned int current_scope = total_vars; current_scope >= base_scope; current_scope--) {
-    // Calculate the distance from the top of the stack
-    // Offset by one since arrays start at 0
-    return (total_vars - 1) - current_scope;
+  for (unsigned int current_scope = total_vars; current_scope > base_scope; current_scope--) {
+    if (tk.token_instance == tk_stack[current_scope].token_instance) {
+      // Calculate the distance from the top of the stack
+      // Offset by one since arrays start at 0
+      return (total_vars - 1) - current_scope;
+    }
   }
 
   // Negative if no match was found
@@ -271,6 +276,7 @@ void process_semantics(Node * root, int var_count) {
     base_scope = total_vars;
 
     // If not found then it is valid
+    // n>=0 (the variable was found on the stack), then issue to the target
     if (position == -1 || position > var_count) {
       std::string integer_value = root->consumed_tokens[3].token_instance;
 
@@ -487,7 +493,6 @@ void process_semantics(Node * root, int var_count) {
     Token_Type temp_tk_id = temp_tk.token_ID;
 
     std::string temp_var = generate_temp(VARIABLE);
-    std::string temp_label = generate_temp(LABEL);
 
     // Get value of second <expr>
     process_semantics(root->children[2], var_count);
@@ -496,14 +501,48 @@ void process_semantics(Node * root, int var_count) {
     // Get value of first <expr>
     process_semantics(root->children[0], var_count);
 
-    // Evaluate <RO>
-    write_RO(temp_tk_id, temp_var, temp_label);
+    // evaluate <expr> <RO> <expr>
+    // If True, then continue; if false, jump to ELSE
+    //    continue section of code, evaluate <stat>
+    //    more code
+    //    ...
+    //    jump L_ENDIF
+    // ELSE Skip above code
+    //    execute code here
+    //    ...
+    //    continue on
+    // L_ENDIF
 
-    // TODO: Figure out how to deal with optionals
-    // Based on condition evaluate then <stat> or else <stat>
-    process_semantics(root->children[3], var_count);
+    bool has_else = root->children.size() == 5 ? true: false;
 
-    write_asm(temp_label + ":", "NOOP");
+    std::string temp_end_if_label = generate_temp(LABEL);
+
+    // Evaluate <RO> branches and adjust labels
+    if (has_else) {
+      std::string temp_else_label = generate_temp(LABEL);
+
+      // Normal if then, but now else will be exit point
+      write_RO(temp_tk_id, temp_var, temp_else_label);
+
+      // statements inside if section
+      // Should also jump to end if label when if expression is true
+      process_semantics(root->children[3], var_count);
+      write_asm("BR", temp_end_if_label);
+
+      // Otherwise move onto the else <stat>
+      // end of else will be next to end of general if label
+      write_asm(temp_else_label + ":", "NOOP");
+      process_semantics(root->children[4], var_count);
+    }
+    // Normal if then
+    else {
+      write_RO(temp_tk_id, temp_var, temp_end_if_label);
+      process_semantics(root->children[3], var_count);
+    }
+
+    // Write the closing label position in both cases
+    // Concludes the end of an if/if-else chain
+    write_asm(temp_end_if_label + ":", "NOOP");
   }
   // <loop> -> while [ <expr> <RO> <expr> ] <stat>
   else if (label == "<loop>") {
