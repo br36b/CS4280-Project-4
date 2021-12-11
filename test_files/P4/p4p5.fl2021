@@ -10,7 +10,7 @@ start
    start
       assign z = x / y ;
       assign z = x - ( z * y ) ;
-      if [ z == 0 ]
+      if [ z == 0 ] then
       start
          talk y ;
       stop ;

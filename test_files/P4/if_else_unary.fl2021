@@ -1,0 +1,14 @@
+&&p4t4 : conditional, will obviously need to have variants checking each relational operator &&
+&& modified for unary and if else verification and percentage &&
+declare y = 5 ;
+program
+start
+   declare x = 0;
+   listen y ;
+   listen x;
+   if [ y % x ] then
+   start
+      talk . y ;
+   stop
+   else talk y + 123; ;
+stop

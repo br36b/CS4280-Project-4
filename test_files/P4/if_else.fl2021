@@ -1,5 +1,7 @@
 && p4t5 : what does this do? &&
 && loops up to a number and prints out even divisors &&
+&& modified to test if-else with else block &&
+&& unary used on non-even divisors &&
 declare x = 0 ;
 declare y = 2 ;
 declare z = 0 ;
@@ -10,12 +12,14 @@ start
    start
       assign z = x / y ;
       assign z = x - ( z * y ) ;
-      if [ z == 0 ]
+      if [ z == 0 ] then
       start
          talk y ;
-      stop ;
+      stop
       else
-        talk -1;
+      start
+        talk .y ;
+      stop ;
       assign y = y + 1 ;
    stop ;
 stop
