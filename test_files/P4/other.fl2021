@@ -1,0 +1,49 @@
+declare x = 1;
+declare y = 2;
+program
+start
+  assign y = .2;
+  if [ y < x ] then
+    talk 1;
+  else
+    talk .1;
+  ;
+
+  if [ y > x ] then
+    talk 1;
+  else
+    talk .1;
+  ;
+
+  if [ x { == } y] then
+    talk 1;
+  else
+    talk .1;
+  ;
+
+  if [ x % . y ] then
+    talk 1;
+  else
+    talk .1;
+  ;
+
+  talk x * y;
+  talk y / x;
+  talk x + y;
+  talk x - y;
+
+  label x;
+
+  && Should produce error when uncommented for duplicate labels &&
+  && label x; &&
+
+  start
+    label dog;
+  stop
+
+  && Should produce error when uncommented for undeclared jump label &&
+  && Should return invalid when label used out of scope &&
+  && jump dog; &&
+
+
+stop

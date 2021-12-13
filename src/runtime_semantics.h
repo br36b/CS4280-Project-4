@@ -25,4 +25,6 @@ void initialize_semantics(Node *, std::string="");
 
 std::string generate_temp(int);
 
+void s_cleanup();
+
 #endif

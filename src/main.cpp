@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   }
   // Input file provided
   else if (argc == 2) {
-    std::cout << "File provided. Verifying. " << std::endl;
+    /* std::cout << "File provided. Verifying. " << std::endl; */
 
     // Take the arg and store it
     base_filename = argv[1];
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
   initialize_semantics(root, FINAL_OUTPUT_FILENAME);
 
   // Output name of target generated and nothing else on success
-  std::cout << "Target File Generated: " << FINAL_OUTPUT_FILENAME << std::endl;
+  std::cout << "\nTarget File Generated: " << FINAL_OUTPUT_FILENAME << std::endl;
 
   // Close temp streams
   temp_in_fp.close();

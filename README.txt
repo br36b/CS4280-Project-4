@@ -1,8 +1,13 @@
 Storage=Local
 
-The local option was implemented.
+All given test files passed. Added some if-else and RO symbol testing.
 
-Empty file is not valid and will be allowed to be progress past program initialization.
+Fixed an issue with <M> breakdown in parser. Should work properly now when branching unary symbols and expressions.
+
+Made labels and variable identifiers different in context. Previously disallowed them to have the same identifier.
+Prefixed with `L_Identifier`.
+
+Empty file is not valid and will not be allowed to be progress past program initialization.
 
 Program can be compiled using provided Makefile.
 

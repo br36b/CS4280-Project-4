@@ -84,7 +84,7 @@ void get_next_token(Node *n) {
 // Just the old test scanner with small changes
 // Will not reach this function if it starts off with no data
 Node *parser(std::ifstream &in_stream) {
-  std::cout << "\nParsing..." << std::endl;
+  /* std::cout << "\nParsing..." << std::endl; */
 
   // Assign global file pointer from parameter
   in_fp = &in_stream;
@@ -103,7 +103,7 @@ Node *parser(std::ifstream &in_stream) {
 
     // Exit once no more tokens are in file
     if (temp_tk.token_ID == TK_EOF) {
-      std::cout << "Parser: Successfully reached the end of file!" << std::endl;
+      /* std::cout << "Parser: Successfully reached the end of file!" << std::endl; */
     }
     // Needs to end with EOF since it is the base token
     else {

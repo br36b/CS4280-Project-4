@@ -16,9 +16,6 @@ static unsigned int total_vars;
 // Store the base scope of execution
 static unsigned int base_scope;
 
-// Store the local scope when blocks are used
-static unsigned int block_indent_scope;
-
 // Store total amount of temp vars
 static unsigned int total_temp_vars;
 
@@ -29,6 +26,7 @@ static unsigned int total_temp_labels;
 std::string temp_stack[MAX_SIZE];
 
 const std::string LABEL_PREFIX = "L_";
+const std::string VARIABLE_PREFIX = "T";
 
 enum temp_type {
   LABEL,
@@ -36,6 +34,7 @@ enum temp_type {
 };
 
 // Store global file for output
+std::string output_filename;
 std::ofstream out_fp;
 
 std::string generate_temp(int type) {
@@ -47,7 +46,7 @@ std::string generate_temp(int type) {
     total_temp_labels++;
   }
   else if (type == VARIABLE) {
-    base += "T" + std::to_string(total_temp_vars);
+    base += VARIABLE_PREFIX + std::to_string(total_temp_vars);
     temp_stack[total_temp_vars] = base;
 
     total_temp_vars++;
@@ -163,6 +162,8 @@ void push(Token tk) {
     std::cout << "\nSemantic Error: Max number of stack items exceeded. Limit 100. Total Items: "
       << total_vars << std::endl;
 
+    s_cleanup();
+
     exit(EXIT_FAILURE);
   }
 
@@ -172,6 +173,8 @@ void push(Token tk) {
     if (tk_stack[current_scope].token_instance == tk.token_instance) {
       std::cout << "Semantic Error: There was a variable already declared in this scope. Variable: "
         << tk.token_instance << " on line " << tk.line_num << std::endl;
+
+      s_cleanup();
 
       exit(EXIT_FAILURE);
     }
@@ -234,6 +237,7 @@ void print_vars() {
 
 // Initialize base variables for assembly output
 void initialize_semantics(Node * root, std::string filename) {
+  output_filename = filename;
   // Set the file pointer up
   // File has been verified externally prior to call
   out_fp.open(filename);
@@ -251,7 +255,7 @@ void process_semantics(Node * root, int var_count) {
 
   std::string label = root->func_label;
 
-  std::cout << "Next Process Point: " << label << std::endl;
+  /* std::cout << "Next Process Point: " << label << std::endl; */
 
   /* print_vars(); */
 
@@ -294,6 +298,8 @@ void process_semantics(Node * root, int var_count) {
         << "\n\t Line: " << root->consumed_tokens[1].line_num
         << std::endl;
 
+      s_cleanup();
+
       exit(EXIT_FAILURE);
     }
 
@@ -304,20 +310,15 @@ void process_semantics(Node * root, int var_count) {
   else if (label == "<block>") {
     unsigned int local_var_count = 0;
 
-    // Change scope for current block
+    // Store scope for current block
+    // Used to remove from stack once scope ends
     base_scope = total_vars;
-
-    // Begin block scope
-    block_indent_scope++;
 
     // <vars> and <stats>
     iterate_children(root->children, local_var_count);
 
     // Remove a scope level once finished with block
     pop();
-
-    // End block scope
-    block_indent_scope--;
   }
   // <expr> -> <N> + <expr> | <N>
   else if (label == "<expr>") {
@@ -427,6 +428,8 @@ void process_semantics(Node * root, int var_count) {
             << "\n\t Line: " << temp_tk.line_num
             << std::endl;
 
+          s_cleanup();
+
           exit(EXIT_FAILURE);
         }
 
@@ -452,6 +455,8 @@ void process_semantics(Node * root, int var_count) {
         << "\n\t Instance: " << temp_tk.token_instance
         << "\n\t Line: " << temp_tk.line_num
         << std::endl;
+
+      s_cleanup();
 
       exit(EXIT_FAILURE);
     }
@@ -585,6 +590,8 @@ void process_semantics(Node * root, int var_count) {
         << "\n\t Line: " << temp_tk.line_num
         << std::endl;
 
+      s_cleanup();
+
       exit(EXIT_FAILURE);
     }
     // If found then write value
@@ -618,6 +625,8 @@ void process_semantics(Node * root, int var_count) {
         << "\n\t Line: " << temp_tk.line_num
         << std::endl;
 
+      s_cleanup();
+
       exit(EXIT_FAILURE);
     }
   }
@@ -636,6 +645,8 @@ void process_semantics(Node * root, int var_count) {
         << "\n\t Line: " << temp_tk.line_num
         << std::endl;
 
+      s_cleanup();
+
       exit(EXIT_FAILURE);
     }
     // Otherwise allow the jump to occur
@@ -648,4 +659,14 @@ void process_semantics(Node * root, int var_count) {
   else {
     iterate_children(root->children, var_count);
   }
+}
+
+// Remove temp file
+void s_cleanup() {
+  // Close the temp stream
+  out_fp.close();
+
+  // Delete the temp file if there was an error
+  std::string default_file_name = output_filename;
+  std::remove(default_file_name.c_str());
 }
